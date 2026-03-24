@@ -1,0 +1,16 @@
+diff --git a/classes/sdcard_image-rpi.bbclass b/classes/sdcard_image-rpi.bbclass
+index 1234567..abcdefg 100644
+--- a/classes/sdcard_image-rpi.bbclass
++++ b/classes/sdcard_image-rpi.bbclass
+@@ -193,6 +193,11 @@ rpi_generate_sysctl_config() {
+ 
+     # sysv sysctl config
+     IMAGE_SYSCTL_CONF="${IMAGE_ROOTFS}${sysconfdir}/sysctl.conf"
++    # In systemd images sysctl.conf is a symlink to /dev/null;
++    # sed -i cannot operate on a symlink, so replace it first.
++    if [ -L "${IMAGE_SYSCTL_CONF}" ]; then
++        rm -f "${IMAGE_SYSCTL_CONF}" && touch "${IMAGE_SYSCTL_CONF}"
++    fi
+     test -e ${IMAGE_ROOTFS}${sysconfdir}/sysctl.conf && \
+         sed -e "/vm.min_free_kbytes/d" -i ${IMAGE_SYSCTL_CONF}
+     echo "" >> ${IMAGE_SYSCTL_CONF} && echo "vm.min_free_kbytes = 8192" >> ${IMAGE_SYSCTL_CONF}
