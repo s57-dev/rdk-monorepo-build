@@ -5,6 +5,8 @@ multi-layer IPK pipeline — all layers are checked out and built together, so a
 recipe change across any layer produces a new image without rebuilding
 intermediate IPK feeds.
 
+Supported RDK version: RDKE-8 (draft)
+
 ## Prerequisites
 
 - Docker
