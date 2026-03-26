@@ -7,8 +7,8 @@ ENV LANGUAGE=en_US.UTF-8
 
 RUN apt-get update && apt-get install -y \
     build-essential chrpath cmake curl diffstat g++ g++-multilib gcc gcc-multilib \
-    git git-flow git-man jq llvm make python3.8 python3.8-dev python3.8-venv python3-pip \
-    ripgrep sysstat texinfo tk-dev tree wget xz-utils zip zstd \
+    git git-flow git-man gosu jq llvm make python3.8 python3.8-dev python3.8-venv python3-pip \
+    ripgrep sudo sysstat texinfo tk-dev tree wget xz-utils zip zstd \
     libbz2-dev libffi-dev libglib2.0-dev libldap2-dev liblzma-dev libncurses5-dev \
     libreadline-dev libsasl2-dev libsqlite3-dev libslang2-dev libssl-dev libxml2-dev \
     libxmlsec1-dev zlib1g-dev ant nnn locales \
@@ -23,19 +23,15 @@ RUN locale-gen en_US.UTF-8 && update-locale LANG=en_US.UTF-8
 RUN python3.8 -m pip install --upgrade pip setuptools wheel && \
     python3.8 -m pip install kas pyyaml requests jinja2 markupsafe
 
-ARG USER_ID=1000
-ARG GROUP_ID=1000
-ARG USERNAME=rdk
+RUN echo "builder ALL=NOPASSWD: ALL" > /etc/sudoers.d/builder-nopasswd && \
+    chmod 660 /etc/sudoers.d/builder-nopasswd && \
+    groupadd -g 30000 builder && \
+    useradd -m -u 30000 -g 30000 --create-home --home-dir /builder -s /bin/bash builder
 
-RUN groupadd -g $GROUP_ID $USERNAME && \
-    useradd -m -u $USER_ID -g $GROUP_ID -s /bin/bash $USERNAME && \
-    echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+RUN mkdir -p /work && chown builder:builder /work
 
-RUN mkdir -p /work && chown $USERNAME:$USERNAME /work
+COPY container-entrypoint /container-entrypoint
 
 WORKDIR /work
-USER $USERNAME
 
-RUN git config --global init.defaultBranch main && \
-    git config --global user.email "build@local" && \
-    git config --global user.name "Build"
+ENTRYPOINT ["/container-entrypoint"]

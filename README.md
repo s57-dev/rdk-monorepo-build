@@ -10,19 +10,23 @@ intermediate IPK feeds.
 - Docker
 - Git credentials for `code.rdkcentral.com` in `~/.netrc`
 
-## Build
+## Build the container image
 
 ```bash
-# Using the wrapper script
-./build.sh
+./build_container.sh
+```
 
-# Or run the container directly
-docker build --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) \
-    -t rdk-kas-builder:latest .
-docker run --rm -it -v "$PWD:/work" -v "$HOME/.netrc:/home/rdk/.netrc:ro" \
-    --workdir /work rdk-kas-builder:latest kas build monolithic-raspberrypi4-64.yml
+## Build the image
 
-# Or natively
-pip install kas
-kas build monolithic-raspberrypi4-64.yml
+```bash
+KAS_CONTAINER_IMAGE=rdk-kas-builder:latest \
+    kas-container build kas/monolithic-raspberrypi4-64.yml
+```
+
+To pass `.netrc` credentials into the container:
+
+```bash
+KAS_CONTAINER_IMAGE=rdk-kas-builder:latest \
+    kas-container --runtime-args "-v $HOME/.netrc:/home/builder/.netrc:ro" \
+    build kas/monolithic-raspberrypi4-64.yml
 ```
