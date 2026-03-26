@@ -1,0 +1,6 @@
+header:
+  version: 14
+
+local_conf_header:
+  devtools: |
+    IMAGE_INSTALL:append = " valgrind smem"
