@@ -1,9 +1,11 @@
-# Monolithic RDK-E Build for Raspberry Pi 4
+# Monolithic RDK-E Build 
 
 Builds a complete RDK-E image from source with a single command. Alternative to the
 multi-layer IPK pipeline — all layers are checked out and built together, so any
 recipe change across any layer produces a new image without rebuilding
 intermediate IPK feeds.
+
+Supported RDK version: RDKE-8 (draft)
 
 ## Prerequisites
 
