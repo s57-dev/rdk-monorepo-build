@@ -1,0 +1,57 @@
+From: Zoltan Kuscsik <zoltan.kuscsik@rdkcentral.com>
+Subject: [PATCH] westeros-gl: add WESTEROS_GL_USER_PREFERRED_SIZE env var support
+
+Allow selecting a DRM mode by explicit WxH size via
+WESTEROS_GL_USER_PREFERRED_SIZE env var. This is needed for QEMU/virtio-gpu
+where the preferred mode flag may not be reliable and we need to select
+exactly 1280x720 to avoid ERANGE from drmModeAtomicCommit when
+SRC_W/CRTC_W > 1.
+
+Upstream: https://code.rdkcentral.com/r/components/opensource/westeros
+
+---
+ westeros-gl/westeros-gl.c | 21 +++++++++++++++++++--
+ 1 file changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/westeros-gl/westeros-gl.c b/westeros-gl/westeros-gl.c
+index e6dc21e..f4bf693 100644
+--- a/westeros-gl/westeros-gl.c
++++ b/westeros-gl/westeros-gl.c
+@@ -5464,6 +5464,9 @@ static void wstSelectMode( WstGLCtx *ctx, int width, int height )
+       const char *useBest= 0;
+       int maxArea= 0;
+       const char *env= getenv("WESTEROS_GL_MAX_MODE");
++      const char *max_size = getenv("WESTEROS_GL_GRAPHICS_MAX_SIZE");
++      const char *user_preferred_size = getenv("WESTEROS_GL_USER_PREFERRED_SIZE");
++
+       if ( env )
+       {
+          int w= 0, h= 0;
+@@ -5480,9 +5483,25 @@ static void wstSelectMode( WstGLCtx *ctx, int width, int height )
+       }
+       for( i= 0; i < ctx->conn->count_modes; ++i )
+       {
+-         if ( usePreferred )
++         if ( usePreferred || user_preferred_size )
+          {
+-            if ( ctx->conn->modes[i].type & DRM_MODE_TYPE_PREFERRED )
++            // If max size is set and found we use it as preferred, otherwise
++            // we use the mode marked as preferred by the driver
++            if ( user_preferred_size )
++            {
++               int w= 0, h= 0;
++               if ( sscanf( user_preferred_size, "%dx%d", &w, &h ) == 2 )
++               {
++                  if ( (ctx->conn->modes[i].hdisplay == w) &&
++                       (ctx->conn->modes[i].vdisplay == h) )
++                  {
++                     INFO("Setting user preffered by size %d\n", i);
++                     miPreferred= i;
++                  }
++               } else {
++                  INFO("Invalid user preferred size %s\n", user_preferred_size);
++               }
++             } else if ( ctx->conn->modes[i].type & DRM_MODE_TYPE_PREFERRED )
+             {
+                miPreferred= i;
+             }
