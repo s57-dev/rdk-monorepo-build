@@ -34,8 +34,6 @@ local_conf_header:
     PROVIDES:pn-systemaudioplatform:append = " virtual/vendor-systemaudioplatform"
     RPROVIDES:systemaudioplatform:append = " virtual/vendor-systemaudioplatform"
     PROVIDES:pn-iarmbus:append = " iarmbus-headers"
-    PROVIDES:pn-rdk-gstreamer-utils:append = " rdk-gstreamer-utils-headers"
-    DEPENDS:remove:pn-rdk-gstreamer-utils-platform = "rdk-gstreamer-utils-headers"
     PROVIDES:pn-gstreamer1.0-plugins-base:append = " gstreamer1.0-plugins-base-app \
                                                     gstreamer1.0-plugins-base-playback gstreamer1.0-plugins-base-audioconvert \
                                                     gstreamer1.0-plugins-base-audioresample gstreamer1.0-plugins-base-gio \
@@ -57,7 +55,13 @@ local_conf_header:
     BBMASK:remove = " meta-rdk-halif-headers/recipes-rdk-halif-headers/audiocapture/"
     BBMASK:remove = " meta-rdk-halif-headers/recipes-rdk-halif-headers/tvsettings"
     BBMASK:append = " meta-rdk-halif-headers/recipes-rdk-headers/iarmbus/"
-    BBMASK:append = " meta-rdk-halif-headers/recipes-rdk-headers/rdk-gstreamer-utils/"
+  # rdk-gstreamer-utils (middleware) and rdk-gstreamer-utils-headers (halif)
+  # both install rdk_gstreamer_utils.h to /usr/include. Remove the header from
+  # rdk-gstreamer-utils so only the halif-headers copy exists, avoiding sysroot
+  # conflicts while letting rdk-gstreamer-utils-platform depend on the headers
+  # recipe without a circular dependency.
+  monolithic-sysroot-fixups: |
+    do_install:append:pn-rdk-gstreamer-utils = " rm -f ${D}${includedir}/rdk_gstreamer_utils.h; rm -f ${D}${includedir}/rdk_gstreamer_utils_soc.h;"
   # Application dev layer (priority 6) has newer residentui/rdkresidentapp
   # recipes but meta-rdk-video (priority 7) wins by default. Bump app layer
   # priority so its recipes take precedence 
