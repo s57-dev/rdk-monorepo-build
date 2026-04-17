@@ -26,7 +26,7 @@ kas/
 ├── include/
 │   ├── repos-oss.yml            # Open Source upstream repos
 │   └── repos-rdke.yml           # RDKE middleware/vendor/product repos
-├── monolithic-raspberrypi4.yml         # 32-bit userspace (lib32 multilib)
+├── monolithic-raspberrypi4.yml  # 32-bit userspace
 └── tools/
     └── qemu-boot.yml            # QEMU overlay (Experiment, graphics may work or not)
 ```
