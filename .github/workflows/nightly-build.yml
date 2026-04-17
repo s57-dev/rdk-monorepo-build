@@ -40,8 +40,11 @@ jobs:
       - name: Build kas container image
         run: docker build -t rdk-kas-builder:latest .
 
-      - name: Install kas
-        run: pip install kas
+      - name: Install kas-container
+        run: |
+          python3 -m venv /tmp/kas-venv
+          /tmp/kas-venv/bin/pip install kas
+          echo "/tmp/kas-venv/bin" >> "$GITHUB_PATH"
 
       - name: Run kas build
         env:
