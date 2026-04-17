@@ -30,7 +30,7 @@ jobs:
 
   build:
     needs: check
-    if: needs.check.outputs.needs_build == 'true'
+    if: needs.check.outputs.needs_build == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: self-hosted
 
     steps:
@@ -49,7 +49,7 @@ jobs:
       - name: Run kas build
         env:
           KAS_CONTAINER_IMAGE: rdk-kas-builder:latest
-        run: kas-container build kas/monolithic-raspberrypi4-64.yml
+        run: kas-container build kas/monolithic-raspberrypi4.yml
 
       - name: Upload build image
         uses: actions/upload-artifact@v4
