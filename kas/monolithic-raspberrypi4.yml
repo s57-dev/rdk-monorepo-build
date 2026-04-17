@@ -1,0 +1,7 @@
+header:
+  version: 14
+  includes:
+    - include/repos-oss.yml
+    - include/repos-rdke.yml
+
+target: lib32-rdk-fullstack-image

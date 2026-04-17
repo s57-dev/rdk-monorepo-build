@@ -1,16 +1,10 @@
-# Monolithic RDK-E Build 
-
-Builds a complete RDK-E image from source with a single command. Alternative to the
-multi-layer IPK pipeline — all layers are checked out and built together, so any
-recipe change across any layer produces a new image without rebuilding
-intermediate IPK feeds.
+# Monolithic RDK-E Build
 
 Supported RDK version: RDKE-8 (draft)
 
 ## Prerequisites
 
 - Docker
-- Git credentials for `code.rdkcentral.com` in `~/.netrc`
 
 ## Build the container image
 
@@ -18,12 +12,29 @@ Supported RDK version: RDKE-8 (draft)
 ./build_container.sh
 ```
 
+## KAS configuration layout
+
+```
+kas/
+├── include/
+│   ├── repos-oss.yml            # Open Source upstream repos
+│   └── repos-rdke.yml           # RDKE middleware/vendor/product repos
+├── monolithic-raspberrypi4.yml         # 32-bit userspace (lib32 multilib)
+└── tools/
+    └── qemu-boot.yml            # QEMU overlay (Experiment, graphics may work or not)
+```
+
 ## Build the image
 
 ```bash
 KAS_CONTAINER_IMAGE=rdk-kas-builder:latest \
-    kas-container build kas/monolithic-raspberrypi4-64.yml
+    kas-container build kas/monolithic-raspberrypi4.yml
 ```
+
+### Native 64-bit (aarch64)
+
+```
+### Passing credentials
 
 To pass `.netrc` credentials into the container:
 

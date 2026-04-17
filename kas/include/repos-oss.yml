@@ -1,0 +1,66 @@
+header:
+  version: 14
+
+repos:
+
+  poky:
+    url: "https://github.com/rdkcentral/poky.git"
+    refspec: refs/tags/rdk-4.6.0
+    path: rdke/common/poky
+    layers:
+      meta:
+
+  meta-openembedded:
+    url: "https://github.com/rdkcentral/meta-openembedded.git"
+    refspec: refs/tags/rdk-4.0.0
+    path: rdke/common/meta-openembedded
+    layers:
+      meta-oe:
+      meta-python:
+      meta-webserver:
+      meta-multimedia:
+      meta-networking:
+
+  meta-rdk-auxiliary:
+    url: "https://github.com/rdkcentral/meta-rdk-auxiliary.git"
+    refspec: refs/tags/1.8.0
+    path: rdke/common/meta-rdk-auxiliary
+
+  meta-stack-layering-support:
+    url: "https://github.com/rdkcentral/meta-stack-layering-support.git"
+    refspec: refs/tags/3.2.0
+    path: rdke/common/meta-stack-layering-support
+
+  meta-rdk-oss-reference:
+    url: "https://github.com/rdkcentral/meta-rdk-oss-reference.git"
+    refspec: refs/tags/4.12.0
+    path: rdke/common/meta-rdk-oss-reference
+
+  meta-rdk-halif-headers:
+    url: "https://github.com/rdkcentral/meta-rdk-halif-headers.git"
+    refspec: refs/tags/4.1.4
+    path: rdke/common/meta-rdk-halif-headers
+
+  meta-clang:
+    url: "https://github.com/rdkcentral/meta-clang.git"
+    refspec: refs/tags/rdk-4.1.0
+    path: rdke/common/meta-clang
+
+  meta-lts-mixins:
+    url: "https://github.com/rdkcentral/meta-lts-mixins.git"
+    refspec: refs/tags/rdk-4.0.0
+    path: rdke/common/meta-lts-mixins
+
+  meta-python2:
+    url: "https://github.com/rdkcentral/meta-python2.git"
+    refspec: refs/tags/rdk-4.0.0
+    path: rdke/middleware/meta-python2
+
+  meta-raspberrypi:
+    url: "https://git.yoctoproject.org/meta-raspberrypi"
+    refspec: ab5815a2ca0a460398878f77a7e39bc1a6dfe0bf
+    path: rdke/vendor/soc/meta-raspberrypi
+    patches:
+      fix-sysctl-symlink:
+        path: ../../../../patches/0001-sdcard_image-rpi-handle-sysctl.conf-symlink.patch
+        repo: meta-raspberrypi

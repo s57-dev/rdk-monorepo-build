@@ -1,0 +1,63 @@
+# ===================================================================
+# KAS extension: QEMU boot support for the RPi image
+# ===================================================================
+#
+# Combine with either the lib32 or native 64-bit config:
+#
+#   kas build kas/monolithic-raspberrypi4-64.yml:kas/tools/qemu-boot.yml
+#   kas build kas/monolithic-raspberrypi4-64-native.yml:kas/tools/qemu-boot.yml
+#
+# After the build, launch the image with:
+#
+#   kas/tools/qemu/run-qemu-rpi.sh              # graphical (virtio-gpu + virgl)
+#   kas/tools/qemu/run-qemu-rpi.sh --nographic  # serial console only
+#
+# Host prerequisites:
+#   sudo apt install qemu-system-arm qemu-utils
+#   (QEMU >= 7.0 recommended for virtio-gpu-gl-pci / virgl)
+#
+# ===================================================================
+
+header:
+  version: 14
+
+# Register the in-tree BSP overlay layer that carries the kernel
+# config fragment (virtio built-in) and mesa virgl driver append.
+repos:
+  meta-rpi-qemu:
+    path: kas/tools/qemu/meta-rpi-qemu
+
+local_conf_header:
+  # ------ Image output format ------------------------------------------
+  qemu-image-fstypes: |
+    # Produce a raw ext4 rootfs image that QEMU can mount as a virtio-blk
+    # drive.  The wic/SD-card images are still generated for real hardware.
+    IMAGE_FSTYPES:append = " ext4"
+
+  # ------ Kernel modules -----------------------------------------------
+  qemu-kernel-modules: |
+    # Ship every kernel module inside the rootfs so virtio, drm, and
+    # networking drivers are available at boot (the critical ones are
+    # built-in via the config fragment, but modules are still useful for
+    # optional drivers and debugging).
+    IMAGE_INSTALL:append = " kernel-modules"
+    KERNEL_MODULE_AUTOLOAD:append = " virtio_pci virtio_blk virtio_net virtio_gpu"
+
+  # ------ Guest graphics stack -----------------------------------------
+  qemu-guest-graphics: |
+    # Mesa: enable gallium with the virgl (virtio-gpu 3D) and swrast
+    # (llvmpipe software fallback) drivers.
+    PACKAGECONFIG:append:pn-mesa = " gallium"
+
+    # Install runtime libraries the RDK UI stack needs to render inside
+    # the QEMU guest.  mesa-megadriver pulls in the gallium driver .so
+    # files; libdrm provides the DRM/KMS userspace API.
+    IMAGE_INSTALL:append = " mesa mesa-megadriver libdrm"
+
+  qemu-network: |
+    IMAGE_INSTALL:append = " dropbear openssh-sftp-server"
+
+  qemu-drm-device: |
+    # On real RPi hardware the VC4 GPU is /dev/dri/card1.
+    # In QEMU the virtio-gpu is /dev/dri/card0.
+    DRI_DEVICE_NAME = "/dev/dri/card0"

@@ -1,0 +1,36 @@
+From 736cd8ffaa2c7f45eeb3dd0aaa0c247f38f97c99 Mon Sep 17 00:00:00 2001
+From: Zoltan Kuscsik <zoltan@s57.io>
+Date: Mon, 6 Apr 2026 20:20:57 +0200
+Subject: [PATCH] displayinfo-soc: fix .so packaging for native 64-bit builds
+
+The old SOLIBS/FILES_SOLIBSDEV overrides do not reliably prevent
+the -dev package from claiming libdisplayinfo-soc.so before the
+main package, causing an installed-vs-shipped QA error.
+
+Replace with explicit FILES:PN-dev that excludes .so patterns,
+and add .so glob to FILES:PN directly.
+---
+ recipes-soc/displayinfo-soc/displayinfo-soc_git.bb | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/recipes-soc/displayinfo-soc/displayinfo-soc_git.bb b/recipes-soc/displayinfo-soc/displayinfo-soc_git.bb
+index 0d6e69a..f8a8f08 100644
+--- a/recipes-soc/displayinfo-soc/displayinfo-soc_git.bb
++++ b/recipes-soc/displayinfo-soc/displayinfo-soc_git.bb
+@@ -14,11 +14,8 @@ SRC_URI = "${CMF_GITHUB_ROOT}/rdkvhal-rdkservices-raspberrypi4;${CMF_GITHUB_SRC_
+ 
+ S = "${WORKDIR}/git/DisplayInfo"
+ 
+-FILES_SOLIBSDEV = ""
+-SOLIBS = ".so"
++FILES:${PN} += "${libdir}/lib*.so"
++FILES:${PN}-dev = "${includedir} ${libdir}/*.la ${libdir}/pkgconfig ${datadir}/pkgconfig ${libdir}/cmake ${datadir}/cmake"
+ INSANE_SKIP:${PN} += "dev-so"
+ 
+ ALLOW_EMPTY:${PN} = "1"
+-
+-FILES:${PN} += "${libdir}/libdisplayinfo-soc.so"
+-FILES:${PN} += "${libdir}/*.so"
+-- 
+2.51.0
+

@@ -1,10 +1,13 @@
-# Monolithic RDKE 8 build for Raspberry Pi 4 (64-bit)
+# RDKE middleware, vendor, product and config repositories, plus shared
+# local.conf settings for the monolithic Raspberry Pi 4 build.
+#
+# This file is not meant to be built directly — include it from a
+# top-level kas configuration.
 header:
   version: 14
 
 machine: raspberrypi4-64-rdke
 distro: rdk
-target: lib32-rdk-fullstack-image
 
 bblayers_conf_header:
   standard: |
@@ -43,18 +46,17 @@ local_conf_header:
                                                     gstreamer1.0-plugins-base-meta"
   # The vendor layer masks halif-header recipes that were IPK-supplied.
   # In monolithic build, those headers are needed at build-time.
-  # Vendor noop recipes reference ${MANIFEST_PATH_PLATFORM}/LICENSE - point it
-  # at the layer root where LICENSE lives (md5 matches).
   monolithic-vendor-vars: |
     MANIFEST_PATH_PLATFORM = "${TOPDIR}/../rdke/vendor/meta-vendor-raspberrypi-dev"
     MANIFEST_PATH_RDK_IMAGES = "${TOPDIR}/../rdke/image-assembler/meta-rdk-images"
 
   # The vendor layer masks halif-header recipes that were IPK-supplied.
-  # In monolithic build, those headers are needed at build-time. 
+  # In monolithic build, those headers are needed at build-time.
   monolithic-unmask: |
     BBMASK:remove = " meta-rdk-halif-headers/recipes-rdk-halif-headers/audiocapture/"
     BBMASK:remove = " meta-rdk-halif-headers/recipes-rdk-halif-headers/tvsettings"
     BBMASK:append = " meta-rdk-halif-headers/recipes-rdk-headers/iarmbus/"
+
   # rdk-gstreamer-utils (middleware) and rdk-gstreamer-utils-headers (halif)
   # both install rdk_gstreamer_utils.h to /usr/include. Remove the header from
   # rdk-gstreamer-utils so only the halif-headers copy exists, avoiding sysroot
@@ -62,67 +64,28 @@ local_conf_header:
   # recipe without a circular dependency.
   monolithic-sysroot-fixups: |
     do_install:append:pn-rdk-gstreamer-utils = " rm -f ${D}${includedir}/rdk_gstreamer_utils.h; rm -f ${D}${includedir}/rdk_gstreamer_utils_soc.h;"
-  # Application dev layer (priority 6) has newer residentui/rdkresidentapp
-  # recipes but meta-rdk-video (priority 7) wins by default. Bump app layer
-  # priority so its recipes take precedence 
-  monolithic-app-layer-fixups: |
-    BBFILE_PRIORITY_application-development = "8"
+  # meta-lts-mixins provides newer cairo 1.18.0 and librsvg 2.58.5, but on RPI
+  # we still need an older version
+  monolithic-version-fixups: |
+    BBMASK:append = " meta-lts-mixins/recipes-gnome/librsvg/"
+    BBMASK:append = " meta-lts-mixins/recipes-graphics/cairo/"
+    PREFERRED_VERSION_librsvg = "2.40.21"
+    PREFERRED_VERSION_lib32-librsvg = "2.40.21"
+    PREFERRED_VERSION_cairo = "1.16.0"
+    PREFERRED_VERSION_lib32-cairo = "1.16.0"
   # Unversioned .so cross-recipe deps that the shlib resolver can't track
   monolithic-qa-fixups: |
     INSANE_SKIP:pn-rdk-gstreamer-utils:append = " file-rdeps"
+
   # Allow empty root password for development/testing.
   monolithic-dev-access: |
     EXTRA_IMAGE_FEATURES += "debug-tweaks"
 
 repos:
 
-  poky:
-    url: "https://github.com/rdkcentral/poky.git"
-    refspec: refs/tags/rdk-4.4.1
-    path: rdke/common/poky
-    layers:
-      meta:
-
-  meta-openembedded:
-    url: "https://github.com/rdkcentral/meta-openembedded.git"
-    refspec: refs/tags/rdk-4.0.0
-    path: rdke/common/meta-openembedded
-    layers:
-      meta-oe:
-      meta-python:
-      meta-webserver:
-      meta-multimedia:
-      meta-networking:
-
-  meta-rdk-auxiliary:
-    url: "https://github.com/rdkcentral/meta-rdk-auxiliary.git"
-    refspec: refs/tags/1.7.0
-    path: rdke/common/meta-rdk-auxiliary
-
-  meta-stack-layering-support:
-    url: "https://github.com/rdkcentral/meta-stack-layering-support.git"
-    refspec: refs/tags/3.0.1
-    path: rdke/common/meta-stack-layering-support
-
-  meta-rdk-oss-reference:
-    url: "https://github.com/rdkcentral/meta-rdk-oss-reference.git"
-    refspec: refs/tags/4.9.0
-    path: rdke/common/meta-rdk-oss-reference
-
-  meta-rdk-halif-headers:
-    url: "https://github.com/rdkcentral/meta-rdk-halif-headers.git"
-    refspec: refs/tags/3.0.2
-    path: rdke/common/meta-rdk-halif-headers
-
-  # Pinned to kirkstone branch — consider a commit hash for reproducibility
-  meta-clang:
-    url: "https://github.com/rdkcentral/meta-clang.git"
-    refspec: kirkstone
-    path: rdke/common/meta-clang
-
   rdke-common-config:
     url: "https://github.com/rdkcentral/rdke-common-config.git"
-    refspec: refs/tags/1.0.13
+    refspec: refs/tags/1.0.20
     path: rdke/configs/common
 
   rdke-stb-config:
@@ -132,7 +95,7 @@ repos:
 
   meta-oss-common-config:
     url: "https://github.com/rdkcentral/meta-oss-common-config.git"
-    refspec: refs/tags/1.3.1
+    refspec: refs/tags/1.4.0
     path: rdke/configs/ext
 
   meta-image-support-rdke:
@@ -142,55 +105,39 @@ repos:
 
   meta-oss-vendor-raspberrypi:
     url: "https://github.com/rdkcentral/meta-oss-vendor-raspberrypi.git"
-    refspec: refs/tags/4.1.2
+    refspec: refs/tags/4.1.4
     path: rdke/vendor/meta-vendor-raspberrypi-oss
 
   meta-vendor-raspberrypi-dev:
     url: "https://github.com/rdkcentral/meta-vendor-raspberrypi-dev.git"
-    refspec: refs/tags/4.9.1
+    refspec: refs/tags/4.11.0
     path: rdke/vendor/meta-vendor-raspberrypi-dev
-
-  meta-raspberrypi:
-    url: "https://git.yoctoproject.org/meta-raspberrypi"
-    refspec: ab5815a2ca0a460398878f77a7e39bc1a6dfe0bf
-    path: rdke/vendor/soc/meta-raspberrypi
     patches:
-      fix-sysctl-symlink:
-        path: ../../../../patches/0001-sdcard_image-rpi-handle-sysctl.conf-symlink.patch
-        repo: meta-raspberrypi
+      fix-displayinfo-soc-packaging:
+        path: ../../../patches/0002-displayinfo-soc-fix-so-packaging.patch
+        repo: meta-vendor-raspberrypi-dev
 
   meta-product-raspberrypi:
     url: "https://github.com/rdkcentral/meta-product-raspberrypi.git"
-    refspec: refs/tags/4.1.2
+    refspec: refs/tags/4.1.4
     path: rdke/product/meta-product-raspberrypi
-
-
-  meta-python2:
-    url: "https://github.com/rdkcentral/meta-python2.git"
-    refspec: refs/tags/rdk-4.0.0
-    path: rdke/middleware/meta-python2
 
   meta-middleware-generic-support:
     url: "https://github.com/rdkcentral/meta-middleware-generic-support.git"
-    refspec: refs/tags/1.15.0
+    refspec: refs/tags/1.17.0
     path: rdke/middleware/generic/meta-middleware-generic-support
 
   meta-rdk:
     url: "https://github.com/rdkcentral/meta-rdk.git"
-    refspec: refs/tags/1.15.0
+    refspec: refs/tags/1.17.0
     path: rdke/middleware/generic/meta-rdk
 
   meta-rdk-video:
     url: "https://github.com/rdkcentral/meta-rdk-video.git"
-    refspec: refs/tags/1.15.0
+    refspec: refs/tags/1.17.0
     path: rdke/middleware/generic/meta-rdk-video
-
-  meta-application-rdke-dev:
-    url: "https://github.com/rdkcentral/meta-application-rdke-dev.git"
-    refspec: refs/tags/5.1.0
-    path: rdke/application/meta-application-rdke-dev
 
   meta-image-assembler-rdke:
     url: "https://github.com/rdkcentral/meta-image-assembler-rdke.git"
-    refspec: refs/tags/4.1.4
+    refspec: refs/tags/4.1.6
     path: rdke/image-assembler/meta-rdk-images
