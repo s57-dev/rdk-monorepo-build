@@ -1,0 +1,61 @@
+name: Nightly Build
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      needs_build: ${{ steps.check_tag.outputs.needs_build }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if current commit already has a nightly tag
+        id: check_tag
+        run: |
+          tags=$(git tag --points-at HEAD | grep '^nightly-' || true)
+          if [ -z "$tags" ]; then
+            echo "No nightly tag on HEAD, build needed"
+            echo "needs_build=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Nightly tag already exists: $tags"
+            echo "needs_build=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    needs: check
+    if: needs.check.outputs.needs_build == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build kas container image
+        run: docker build -t rdk-kas-builder:latest .
+
+      - name: Install kas
+        run: pip install kas
+
+      - name: Run kas build
+        env:
+          KAS_CONTAINER_IMAGE: rdk-kas-builder:latest
+        run: kas-container build kas/monolithic-raspberrypi4-64.yml
+
+      - name: Upload build image
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-image-${{ github.sha }}
+          path: build/tmp/deploy/images/raspberrypi4-64-rdke/lib32-rdk-fullstack-image-*.rootfs.wic.bz2
+
+      - name: Tag commit with nightly build date
+        run: |
+          tag="nightly-$(date -u +'%Y%m%d')"
+          git tag "$tag"
+          git push origin "$tag"
