@@ -31,9 +31,6 @@ KAS_CONTAINER_IMAGE=rdk-kas-builder:latest \
     kas-container build kas/monolithic-raspberrypi4.yml
 ```
 
-### Native 64-bit (aarch64)
-
-```
 ### Passing credentials
 
 To pass `.netrc` credentials into the container:
