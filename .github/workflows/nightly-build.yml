@@ -7,7 +7,7 @@ on:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     outputs:
       needs_build: ${{ steps.check_tag.outputs.needs_build }}
     steps:
@@ -31,7 +31,7 @@ jobs:
   build:
     needs: check
     if: needs.check.outputs.needs_build == 'true'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout repository
