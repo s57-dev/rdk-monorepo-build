@@ -5,6 +5,13 @@ Supported RDK version: RDKE-8 (draft)
 ## Prerequisites
 
 - Docker
+- Python3, Python venv and kas:
+
+```
+python3 -m venv venv/
+source venv/bin/activate
+pip install kas
+```
 
 ## Build the container image
 
