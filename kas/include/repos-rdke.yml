@@ -49,6 +49,9 @@ local_conf_header:
   monolithic-vendor-vars: |
     MANIFEST_PATH_PLATFORM = "${TOPDIR}/../rdke/vendor/meta-vendor-raspberrypi-dev"
     MANIFEST_PATH_RDK_IMAGES = "${TOPDIR}/../rdke/image-assembler/meta-rdk-images"
+  # Install Solution57 prebuilt Bolt apps and trust key into the image.
+  monolithic-bolt-prebuilts: |
+    FACTORY_APPS_JSON_FILE = "${TOPDIR}/../kas/extras/factory-app-version.json"
 
   # The vendor layer masks halif-header recipes that were IPK-supplied.
   # In monolithic build, those headers are needed at build-time.

@@ -1,0 +1,26 @@
+[
+  {
+    "packagename": "com.rdkcentral.base+0.2.0.bolt",
+    "srcuri": "https://repo.solution57.com/rdk-bolts/com.rdkcentral.base%2B0.2.0.bolt",
+    "sha256sum": "3c8febaf8dca3557b2ca2a7ddc8508b441049992023f2331548732f7b7cc1ae7",
+    "installpath": "/etc/rdk/factoryapps"
+  },
+  {
+    "packagename": "com.rdkcentral.refui+6.0.3.bolt",
+    "srcuri": "https://repo.solution57.com/rdk-bolts/com.rdkcentral.refui%2B6.0.3.bolt",
+    "sha256sum": "3315503d059df64da36a5ff34ddc34a461b1e036943f7f1696543cd6007248a8",
+    "installpath": "/etc/rdk/factoryapps"
+  },
+  {
+    "packagename": "com.rdkcentral.wpe+0.2.0.bolt",
+    "srcuri": "https://repo.solution57.com/rdk-bolts/com.rdkcentral.wpe%2B0.2.0.bolt",
+    "sha256sum": "f6f90be4b75edcdfd3cfc69e047f5bef5a04d416eaee9a7f2228c4c6bfb02a0c",
+    "installpath": "/etc/rdk/factoryapps"
+  },
+  {
+    "packagename": "public-cert.pem",
+    "srcuri": "https://repo.solution57.com/rdk-bolts/keys/public-cert.pem",
+    "sha256sum": "5f1e4665c6a8900cf20f4d0405d1520cc778ae2ac3c9263ea8d3cbc30dade2a6",
+    "installpath": "/etc/rdk/certs"
+  }
+]

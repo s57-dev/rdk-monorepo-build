@@ -23,6 +23,8 @@ pip install kas
 
 ```
 kas/
+├── extras/
+│   └── factoryapps-solution57.json # Prebuilt bolt artifacts + key manifest
 ├── include/
 │   ├── repos-oss.yml            # Open Source upstream repos
 │   └── repos-rdke.yml           # RDKE middleware/vendor/product repos
