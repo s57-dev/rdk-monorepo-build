@@ -47,5 +47,5 @@ To pass `.netrc` credentials into the container:
 ```bash
 KAS_CONTAINER_IMAGE=rdk-kas-builder:latest \
     kas-container --runtime-args "-v $HOME/.netrc:/home/builder/.netrc:ro" \
-    build kas/monolithic-raspberrypi4-64.yml
+    build kas/monolithic-raspberrypi4.yml
 ```
