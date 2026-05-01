@@ -1,0 +1,43 @@
+name: PR Validation Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Pull request number to build'
+        required: true
+        type: number
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          ref: refs/pull/${{ inputs.pr_number }}/head
+
+      - name: Build kas container image
+        run: docker build -t rdk-kas-builder:latest .
+
+      - name: Install kas-container
+        run: |
+          python3 -m venv /tmp/kas-venv
+          /tmp/kas-venv/bin/pip install kas
+          echo "/tmp/kas-venv/bin" >> "$GITHUB_PATH"
+
+      - name: Run kas build
+        env:
+          KAS_CONTAINER_IMAGE: rdk-kas-builder:latest
+        run: kas-container build kas/monolithic-raspberrypi4.yml
+
+      - name: Get HEAD SHA
+        id: sha
+        run: echo "value=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload build image
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-${{ inputs.pr_number }}-image-${{ steps.sha.outputs.value }}
+          path: build/tmp/deploy/images/raspberrypi4-64-rdke/lib32-rdk-fullstack-image-*.rootfs.wic.bz2
