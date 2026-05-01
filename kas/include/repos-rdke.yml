@@ -113,7 +113,7 @@ repos:
 
   meta-vendor-raspberrypi-dev:
     url: "https://github.com/rdkcentral/meta-vendor-raspberrypi-dev.git"
-    refspec: refs/tags/4.11.0
+    refspec: refs/tags/4.11.1
     path: rdke/vendor/meta-vendor-raspberrypi-dev
     patches:
       fix-displayinfo-soc-packaging:
