@@ -142,5 +142,5 @@ repos:
 
   meta-image-assembler-rdke:
     url: "https://github.com/rdkcentral/meta-image-assembler-rdke.git"
-    refspec: RDK8-1.0.0
+    refspec: refs/tags/4.1.6
     path: rdke/image-assembler/meta-rdk-images
