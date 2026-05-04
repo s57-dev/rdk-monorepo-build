@@ -108,12 +108,12 @@ repos:
 
   meta-oss-vendor-raspberrypi:
     url: "https://github.com/rdkcentral/meta-oss-vendor-raspberrypi.git"
-    refspec: refs/tags/4.1.4
+    refspec: refs/tags/4.1.5
     path: rdke/vendor/meta-vendor-raspberrypi-oss
 
   meta-vendor-raspberrypi-dev:
     url: "https://github.com/rdkcentral/meta-vendor-raspberrypi-dev.git"
-    refspec: refs/tags/4.11.0
+    refspec: 4.11.1
     path: rdke/vendor/meta-vendor-raspberrypi-dev
     patches:
       fix-displayinfo-soc-packaging:
@@ -137,10 +137,10 @@ repos:
 
   meta-rdk-video:
     url: "https://github.com/rdkcentral/meta-rdk-video.git"
-    refspec: refs/tags/1.17.0
+    refspec: refs/tags/1.17.0-community
     path: rdke/middleware/generic/meta-rdk-video
 
   meta-image-assembler-rdke:
     url: "https://github.com/rdkcentral/meta-image-assembler-rdke.git"
-    refspec: refs/tags/4.1.6
+    refspec: RDK8-1.0.0
     path: rdke/image-assembler/meta-rdk-images
