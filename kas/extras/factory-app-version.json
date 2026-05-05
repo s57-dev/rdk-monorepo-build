@@ -6,15 +6,15 @@
     "installpath": "/etc/rdk/factoryapps"
   },
   {
-    "packagename": "com.rdkcentral.refui+6.0.3.bolt",
-    "srcuri": "https://repo.solution57.com/rdk-bolts/com.rdkcentral.refui%2B6.0.3.bolt",
-    "sha256sum": "3315503d059df64da36a5ff34ddc34a461b1e036943f7f1696543cd6007248a8",
+    "packagename": "com.rdkcentral.refui+6.0.8.bolt",
+    "srcuri": "https://repo.solution57.com/rdk-bolts/com.rdkcentral.refui%2B6.0.8.bolt",
+    "sha256sum": "b4aed9f73524b027678a8bce5f185d7c5c9907aa565372ef66fd342f6cdda250",
     "installpath": "/etc/rdk/factoryapps"
   },
   {
-    "packagename": "com.rdkcentral.wpe+0.2.0.bolt",
-    "srcuri": "https://repo.solution57.com/rdk-bolts/com.rdkcentral.wpe%2B0.2.0.bolt",
-    "sha256sum": "f6f90be4b75edcdfd3cfc69e047f5bef5a04d416eaee9a7f2228c4c6bfb02a0c",
+    "packagename": "com.rdkcentral.wpe+0.3.0.bolt",
+    "srcuri": "https://repo.solution57.com/rdk-bolts/com.rdkcentral.wpe%2B0.3.0.bolt",
+    "sha256sum": "7f78747d48717afe1f74be201ad5a1cd0217da118dfe06c47d6f9c51b362d42b",
     "installpath": "/etc/rdk/factoryapps"
   },
   {
