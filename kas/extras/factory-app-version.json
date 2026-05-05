@@ -2,7 +2,7 @@
   {
     "packagename": "com.rdkcentral.base+0.2.0.bolt",
     "srcuri": "https://repo.solution57.com/rdk-bolts/com.rdkcentral.base%2B0.2.0.bolt",
-    "sha256sum": "160c74a6faf441262eb6d6d1b0d2408ea8380340e95296ed6fbf80683714124d",
+    "sha256sum": "3c8febaf8dca3557b2ca2a7ddc8508b441049992023f2331548732f7b7cc1ae7",
     "installpath": "/etc/rdk/factoryapps"
   },
   {
