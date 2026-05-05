@@ -39,13 +39,3 @@ kas/
 KAS_CONTAINER_IMAGE=rdk-kas-builder:latest \
     kas-container build kas/monolithic-raspberrypi4.yml
 ```
-
-### Passing credentials
-
-To pass `.netrc` credentials into the container:
-
-```bash
-KAS_CONTAINER_IMAGE=rdk-kas-builder:latest \
-    kas-container \
-    build kas/monolithic-raspberrypi4.yml
-```
