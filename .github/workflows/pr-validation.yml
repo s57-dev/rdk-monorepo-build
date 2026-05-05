@@ -1,6 +1,11 @@
 name: PR Validation Build
 
 on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
   workflow_dispatch:
     inputs:
       pr_number:
@@ -8,10 +13,74 @@ on:
         required: true
         type: number
 
-jobs:
-  build:
-    runs-on: self-hosted
+permissions:
+  contents: read
+  pull-requests: read
+  statuses: write
 
+jobs:
+  mark-required:
+    if: github.event_name == 'pull_request_target'
+    runs-on: self-hosted
+    steps:
+      - name: Mark PR validation as required
+        run: |
+          gh api \
+            --method POST \
+            "/repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }}" \
+            -f state='pending' \
+            -f context='PR Validation Build' \
+            -f description='Maintainer must start PR validation build'
+
+  authorize:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: self-hosted
+    outputs:
+      pr_sha: ${{ steps.pr.outputs.sha }}
+      authorized: ${{ steps.auth.outputs.authorized }}
+    steps:
+      - name: Resolve PR SHA
+        id: pr
+        run: |
+          pr_sha="$(gh api \
+            "/repos/${{ github.repository }}/pulls/${{ inputs.pr_number }}" \
+            --jq '.head.sha')"
+          echo "sha=$pr_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Set build status to pending
+        run: |
+          gh api \
+            --method POST \
+            "/repos/${{ github.repository }}/statuses/${{ steps.pr.outputs.sha }}" \
+            -f state='pending' \
+            -f context='PR Validation Build' \
+            -f description='PR validation build started'
+
+      - name: Verify requester is GitHub maintainer
+        id: auth
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const username = context.actor;
+
+            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner,
+              repo,
+              username,
+            });
+
+            const allowed = ['admin', 'maintain'].includes(data.permission);
+            core.setOutput('authorized', String(allowed));
+
+            if (!allowed) {
+              core.setFailed(`Only GitHub maintainers/admins can start the PR validation build. Current permission: ${data.permission}`);
+            }
+
+  build:
+    if: github.event_name == 'workflow_dispatch'
+    needs: authorize
+    runs-on: self-hosted
     steps:
       - name: Checkout PR
         uses: actions/checkout@v4
@@ -32,12 +101,34 @@ jobs:
           KAS_CONTAINER_IMAGE: rdk-kas-builder:latest
         run: kas-container build kas/monolithic-raspberrypi4.yml
 
-      - name: Get HEAD SHA
-        id: sha
-        run: echo "value=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-
       - name: Upload build image
         uses: actions/upload-artifact@v4
         with:
-          name: pr-${{ inputs.pr_number }}-image-${{ steps.sha.outputs.value }}
+          name: pr-${{ inputs.pr_number }}-image-${{ needs.authorize.outputs.pr_sha }}
           path: build/tmp/deploy/images/raspberrypi4-64-rdke/lib32-rdk-fullstack-image-*.rootfs.wic.bz2
+
+  report:
+    if: ${{ always() && github.event_name == 'workflow_dispatch' }}
+    needs:
+      - authorize
+      - build
+    runs-on: self-hosted
+    steps:
+      - name: Publish final PR validation status
+        run: |
+          state='failure'
+          description='PR validation build failed'
+
+          if [ "${{ needs.authorize.result }}" != "success" ]; then
+            description='Build start rejected: only maintainers/admins can trigger'
+          elif [ "${{ needs.build.result }}" = "success" ]; then
+            state='success'
+            description='PR validation build passed'
+          fi
+
+          gh api \
+            --method POST \
+            "/repos/${{ github.repository }}/statuses/${{ needs.authorize.outputs.pr_sha }}" \
+            -f state="$state" \
+            -f context='PR Validation Build' \
+            -f description="$description"
