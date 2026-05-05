@@ -24,13 +24,18 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Mark PR validation as required
-        run: |
-          gh api \
-            --method POST \
-            "/repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }}" \
-            -f state='pending' \
-            -f context='PR Validation Build' \
-            -f description='Maintainer must start PR validation build'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            await github.rest.repos.createCommitStatus({
+              owner,
+              repo,
+              sha: context.payload.pull_request.head.sha,
+              state: 'pending',
+              context: 'PR Validation Build',
+              description: 'Maintainer must start PR validation build',
+            });
 
   authorize:
     if: github.event_name == 'workflow_dispatch'
@@ -41,20 +46,31 @@ jobs:
     steps:
       - name: Resolve PR SHA
         id: pr
-        run: |
-          pr_sha="$(gh api \
-            "/repos/${{ github.repository }}/pulls/${{ inputs.pr_number }}" \
-            --jq '.head.sha')"
-          echo "sha=$pr_sha" >> "$GITHUB_OUTPUT"
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pull_number = Number('${{ inputs.pr_number }}');
+            const { data } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number,
+            });
+            core.setOutput('sha', data.head.sha);
 
       - name: Set build status to pending
-        run: |
-          gh api \
-            --method POST \
-            "/repos/${{ github.repository }}/statuses/${{ steps.pr.outputs.sha }}" \
-            -f state='pending' \
-            -f context='PR Validation Build' \
-            -f description='PR validation build started'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            await github.rest.repos.createCommitStatus({
+              owner,
+              repo,
+              sha: '${{ steps.pr.outputs.sha }}',
+              state: 'pending',
+              context: 'PR Validation Build',
+              description: 'PR validation build started',
+            });
 
       - name: Verify requester is GitHub maintainer
         id: auth
@@ -115,20 +131,31 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Publish final PR validation status
-        run: |
-          state='failure'
-          description='PR validation build failed'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const sha = '${{ needs.authorize.outputs.pr_sha }}';
+            if (!sha) {
+              core.info('No PR SHA available, skipping final status update.');
+              return;
+            }
 
-          if [ "${{ needs.authorize.result }}" != "success" ]; then
-            description='Build start rejected: only maintainers/admins can trigger'
-          elif [ "${{ needs.build.result }}" = "success" ]; then
-            state='success'
-            description='PR validation build passed'
-          fi
+            let state = 'failure';
+            let description = 'PR validation build failed';
 
-          gh api \
-            --method POST \
-            "/repos/${{ github.repository }}/statuses/${{ needs.authorize.outputs.pr_sha }}" \
-            -f state="$state" \
-            -f context='PR Validation Build' \
-            -f description="$description"
+            if ('${{ needs.authorize.result }}' !== 'success') {
+              description = 'Build start rejected: only maintainers/admins can trigger';
+            } else if ('${{ needs.build.result }}' === 'success') {
+              state = 'success';
+              description = 'PR validation build passed';
+            }
+
+            await github.rest.repos.createCommitStatus({
+              owner,
+              repo,
+              sha,
+              state,
+              context: 'PR Validation Build',
+              description,
+            });
