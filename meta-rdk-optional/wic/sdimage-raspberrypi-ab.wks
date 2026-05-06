@@ -1,0 +1,8 @@
+# short-description: Create Raspberry Pi SD card image with A/B rootfs slots
+# long-description: Creates a partitioned SD card image with one boot partition
+# and two rootfs partitions (slot A and slot B) for SWUpdate-based A/B updates.
+
+part /boot --source bootimg-partition --ondisk mmcblk0 --fstype=vfat --label boot --active --align 4096 --size 64
+part / --source rootfs --ondisk mmcblk0 --fstype=ext4 --label rootfsA --align 4096 --size 4096
+part /altroot --source rootfs --ondisk mmcblk0 --fstype=ext4 --label rootfsB --align 4096 --size 4096
+part /data --ondisk mmcblk0 --fstype=ext4 --label data --align 4096 --size 1024

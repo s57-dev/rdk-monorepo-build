@@ -1,0 +1,11 @@
+[Unit]
+Description=Confirm successful A/B boot
+After=local-fs.target
+ConditionPathExists=/usr/sbin/fw_setenv
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/rdk-ab-confirm.sh
+
+[Install]
+WantedBy=multi-user.target

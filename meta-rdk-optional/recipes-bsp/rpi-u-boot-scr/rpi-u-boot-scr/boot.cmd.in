@@ -1,0 +1,75 @@
+fdt addr ${fdt_addr} && fdt get value bootargs /chosen bootargs
+
+if test "${slot}" = "a"; then
+  true
+else
+  if test "${slot}" = "b"; then
+    true
+  else
+    if env exists partition; then
+      if test "${partition}" = "3"; then
+        setenv slot b
+      else
+        setenv slot a
+      fi
+      echo "slot invalid/unset, migrated from partition mmcblk0p${partition} -> slot ${slot}"
+    else
+      setenv slot a
+      setenv ustate 0
+      echo "slot invalid/unset, defaulting to slot ${slot}"
+    fi
+    saveenv
+  fi
+fi
+
+if env exists bootlimit; then
+  true
+else
+  setenv bootlimit 3
+fi
+
+if env exists ustate; then
+  true
+else
+  setenv ustate 0
+fi
+
+if env exists bootcount; then
+  true
+else
+  setenv bootcount 0
+fi
+
+if test "${ustate}" = "1"; then
+  echo "Update pending validation: bootcount=${bootcount} bootlimit=${bootlimit}"
+  if test "${bootcount}" -gt "${bootlimit}"; then
+    echo "Rollback triggered"
+    if test "${slot}" = "b"; then
+      setenv slot a
+    else
+      setenv slot b
+    fi
+    setenv ustate 3
+    setenv bootcount 0
+    saveenv
+  fi
+fi
+
+if test "${slot}" = "b"; then
+  setenv partition 3
+else
+  if test "${slot}" = "a"; then
+    true
+  else
+    echo "invalid slot ${slot}, forcing slot a"
+    setenv slot a
+    saveenv
+  fi
+  setenv partition 2
+fi
+
+echo "Boot target slot: ${slot} (mmcblk0p${partition})"
+
+fatload mmc 0:1 ${kernel_addr_r} @@KERNEL_IMAGETYPE@@
+setenv bootargs "${bootargs} root=/dev/mmcblk0p${partition} rootwait rw"
+@@KERNEL_BOOTCMD@@ ${kernel_addr_r} - ${fdt_addr}
