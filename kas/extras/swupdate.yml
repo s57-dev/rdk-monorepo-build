@@ -1,0 +1,29 @@
+header:
+  version: 14
+
+repos:
+  meta-swupdate:
+    url: "https://github.com/sbabic/meta-swupdate.git"
+    refspec: refs/heads/kirkstone
+    path: rdke/common/meta-swupdate
+    layers:
+      .:
+  meta-rdk-optional:
+    path: meta-rdk-optional
+    layers:
+      .:
+
+local_conf_header:
+  swupdate-enable: |
+    # Install SWUpdate and U-Boot environment tools.
+    IMAGE_INSTALL:append = " swupdate libubootenv-bin rdk-ab-confirm"
+    PREFERRED_PROVIDER_u-boot-fw-utils = "libubootenv"
+
+  swupdate-ab-enable: |
+    # Enable U-Boot boot flow and A/B disk layout.
+    RPI_USE_U_BOOT = "1"
+    WKS_FILE = "sdimage-raspberrypi-ab.wks"
+    WIC_CREATE_EXTRA_ARGS = "--no-fstab-update"
+    IMAGE_ROOTFS_EXTRA_SPACE = "262144"
+    IMAGE_FSTYPES:append = " ext4.gz"
+    IMAGE_BOOT_FILES:append = " ${KERNEL_IMAGETYPE};${KERNEL_IMAGETYPE}_a ${KERNEL_IMAGETYPE};${KERNEL_IMAGETYPE}_b"
