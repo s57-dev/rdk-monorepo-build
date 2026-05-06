@@ -112,16 +112,59 @@ jobs:
           /tmp/kas-venv/bin/pip install kas
           echo "/tmp/kas-venv/bin" >> "$GITHUB_PATH"
 
-      - name: Run kas build
+      - name: Build base RPi image
         env:
           KAS_CONTAINER_IMAGE: rdk-kas-builder:latest
         run: kas-container build kas/monolithic-raspberrypi4.yml
 
-      - name: Upload build image
+      - name: Stage base RPi image artifact
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          latest="$(ls -1t build/tmp/deploy/images/raspberrypi4-64-rdke/lib32-rdk-fullstack-image-*.rootfs.wic.bz2 | head -n1)"
+          cp "$latest" "artifacts/rpi4-image-base-${{ needs.authorize.outputs.pr_sha }}.rootfs.wic.bz2"
+
+      - name: Build SWUpdate RPi image
+        env:
+          KAS_CONTAINER_IMAGE: rdk-kas-builder:latest
+        run: kas-container build kas/monolithic-raspberrypi4.yml:kas/extras/swupdate.yml
+
+      - name: Stage SWUpdate RPi image artifact
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          latest="$(ls -1t build/tmp/deploy/images/raspberrypi4-64-rdke/lib32-rdk-fullstack-image-*.rootfs.wic.bz2 | head -n1)"
+          cp "$latest" "artifacts/rpi4-image-swupdate-${{ needs.authorize.outputs.pr_sha }}.rootfs.wic.bz2"
+
+      - name: Build SWUpdate package
+        env:
+          KAS_CONTAINER_IMAGE: rdk-kas-builder:latest
+        run: kas-container build kas/monolithic-raspberrypi4.yml:kas/extras/swupdate.yml --target rdk-ab-update-image
+
+      - name: Stage SWUpdate package artifact
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          latest="$(ls -1t build/tmp/deploy/images/raspberrypi4-64-rdke/rdk-ab-update-image-*.swu | head -n1)"
+          cp "$latest" "artifacts/rpi4-package-swupdate-${{ needs.authorize.outputs.pr_sha }}.swu"
+
+      - name: Upload base RPi image
         uses: actions/upload-artifact@v4
         with:
-          name: pr-${{ inputs.pr_number }}-image-${{ needs.authorize.outputs.pr_sha }}
-          path: build/tmp/deploy/images/raspberrypi4-64-rdke/lib32-rdk-fullstack-image-*.rootfs.wic.bz2
+          name: pr-${{ inputs.pr_number }}-rpi-image-base-${{ needs.authorize.outputs.pr_sha }}
+          path: artifacts/rpi4-image-base-${{ needs.authorize.outputs.pr_sha }}.rootfs.wic.bz2
+
+      - name: Upload SWUpdate RPi image
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-${{ inputs.pr_number }}-rpi-image-swupdate-${{ needs.authorize.outputs.pr_sha }}
+          path: artifacts/rpi4-image-swupdate-${{ needs.authorize.outputs.pr_sha }}.rootfs.wic.bz2
+
+      - name: Upload SWUpdate package
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-${{ inputs.pr_number }}-rpi-package-swupdate-${{ needs.authorize.outputs.pr_sha }}
+          path: artifacts/rpi4-package-swupdate-${{ needs.authorize.outputs.pr_sha }}.swu
 
   report:
     if: ${{ always() && github.event_name == 'workflow_dispatch' }}

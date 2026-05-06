@@ -1,0 +1,60 @@
+software =
+{
+    version = "@@DISTRO_VERSION@@";
+
+    @@MACHINE@@ = {
+        hardware-compatibility: [ "1.0" ];
+        stable : {
+            copy1 : {
+                images: (
+                    {
+                        filename = "lib32-rdk-fullstack-image-@@MACHINE@@.ext4.gz";
+                        type = "raw";
+                        compressed = "zlib";
+                        device = "/dev/mmcblk0p2";
+                        sha256 = "$swupdate_get_sha256(lib32-rdk-fullstack-image-@@MACHINE@@.ext4.gz)";
+                    }
+                );
+                files: (
+                    {
+                        filename = "Image";
+                        path = "/Image_a";
+                        device = "/dev/mmcblk0p1";
+                        filesystem = "vfat";
+                        sha256 = "$swupdate_get_sha256(Image)";
+                    }
+                );
+                bootenv: (
+                    { name = "slot"; value = "a"; },
+                    { name = "ustate"; value = "1"; },
+                    { name = "bootcount"; value = "0"; }
+                );
+            };
+            copy2 : {
+                images: (
+                    {
+                        filename = "lib32-rdk-fullstack-image-@@MACHINE@@.ext4.gz";
+                        type = "raw";
+                        compressed = "zlib";
+                        device = "/dev/mmcblk0p3";
+                        sha256 = "$swupdate_get_sha256(lib32-rdk-fullstack-image-@@MACHINE@@.ext4.gz)";
+                    }
+                );
+                files: (
+                    {
+                        filename = "Image";
+                        path = "/Image_b";
+                        device = "/dev/mmcblk0p1";
+                        filesystem = "vfat";
+                        sha256 = "$swupdate_get_sha256(Image)";
+                    }
+                );
+                bootenv: (
+                    { name = "slot"; value = "b"; },
+                    { name = "ustate"; value = "1"; },
+                    { name = "bootcount"; value = "0"; }
+                );
+            };
+        };
+    };
+}
