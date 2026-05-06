@@ -82,4 +82,3 @@ How it works
 - active slot is stored in U-Boot env as `slot` (`a` or `b`)
 - boot mapping is `a -> /dev/mmcblk0p2`, `b -> /dev/mmcblk0p3`
 - Checking and setting the slots: `fw_printenv slot`, `fw_setenv slot a`/`fw_setenv slot b`. SWUpdate automatically switches the slots
-
