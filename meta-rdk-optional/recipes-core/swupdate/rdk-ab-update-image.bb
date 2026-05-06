@@ -8,7 +8,8 @@ SRC_URI = " \
 "
 
 IMAGE_DEPENDS = "lib32-rdk-fullstack-image"
-SWUPDATE_IMAGES = "lib32-rdk-fullstack-image"
+SWUPDATE_IMAGES = "lib32-rdk-fullstack-image Image"
 SWUPDATE_IMAGES_FSTYPES[lib32-rdk-fullstack-image] = ".ext4.gz"
+SWUPDATE_IMAGES_NOAPPEND_MACHINE[Image] = "1"
 
 inherit swupdate

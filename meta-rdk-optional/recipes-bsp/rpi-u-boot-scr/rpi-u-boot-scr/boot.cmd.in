@@ -70,6 +70,13 @@ fi
 
 echo "Boot target slot: ${slot} (mmcblk0p${partition})"
 
-fatload mmc 0:1 ${kernel_addr_r} @@KERNEL_IMAGETYPE@@
+setenv kernel_file @@KERNEL_IMAGETYPE@@_${slot}
+if fatload mmc 0:1 ${kernel_addr_r} ${kernel_file}; then
+  true
+else
+  echo "slot kernel ${kernel_file} missing, fallback to @@KERNEL_IMAGETYPE@@"
+  setenv kernel_file @@KERNEL_IMAGETYPE@@
+  fatload mmc 0:1 ${kernel_addr_r} ${kernel_file}
+fi
 setenv bootargs "${bootargs} root=/dev/mmcblk0p${partition} rootwait rw"
 @@KERNEL_BOOTCMD@@ ${kernel_addr_r} - ${fdt_addr}

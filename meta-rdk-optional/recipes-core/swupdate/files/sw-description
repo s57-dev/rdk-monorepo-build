@@ -15,6 +15,15 @@ software =
                         sha256 = "$swupdate_get_sha256(lib32-rdk-fullstack-image-@@MACHINE@@.ext4.gz)";
                     }
                 );
+                files: (
+                    {
+                        filename = "Image";
+                        path = "/Image_a";
+                        device = "/dev/mmcblk0p1";
+                        filesystem = "vfat";
+                        sha256 = "$swupdate_get_sha256(Image)";
+                    }
+                );
                 bootenv: (
                     { name = "slot"; value = "a"; },
                     { name = "ustate"; value = "1"; },
@@ -29,6 +38,15 @@ software =
                         compressed = "zlib";
                         device = "/dev/mmcblk0p3";
                         sha256 = "$swupdate_get_sha256(lib32-rdk-fullstack-image-@@MACHINE@@.ext4.gz)";
+                    }
+                );
+                files: (
+                    {
+                        filename = "Image";
+                        path = "/Image_b";
+                        device = "/dev/mmcblk0p1";
+                        filesystem = "vfat";
+                        sha256 = "$swupdate_get_sha256(Image)";
                     }
                 );
                 bootenv: (
