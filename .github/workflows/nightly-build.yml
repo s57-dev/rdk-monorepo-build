@@ -102,6 +102,10 @@ jobs:
 
       - name: Tag commit with nightly build date
         run: |
-          tag="nightly-$(date -u +'%Y%m%d')"
+          base_tag="nightly-$(date -u +'%Y%m%d')"
+          tag="${base_tag}"
+          if git ls-remote --exit-code --tags origin "refs/tags/${base_tag}" >/dev/null 2>&1; then
+            tag="${base_tag}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          fi
           git tag "$tag"
           git push origin "$tag"
