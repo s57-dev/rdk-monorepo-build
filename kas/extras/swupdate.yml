@@ -1,6 +1,9 @@
 header:
   version: 14
 
+env:
+  BUILD_VERSION: "8.0"
+
 repos:
   meta-swupdate:
     url: "https://github.com/sbabic/meta-swupdate.git"
@@ -16,8 +19,9 @@ repos:
 local_conf_header:
   swupdate-enable: |
     # Install SWUpdate and U-Boot environment tools.
-    IMAGE_INSTALL:append = " swupdate libubootenv-bin rdk-ab-confirm"
+    IMAGE_INSTALL:append = " swupdate libubootenv-bin rdk-ab-confirm rdk-ota-update"
     PREFERRED_PROVIDER_u-boot-fw-utils = "libubootenv"
+    DISTRO_VERSION = "${@os.environ.get('BUILD_VERSION', '8.0')}"
 
   swupdate-ab-enable: |
     # Enable U-Boot boot flow and A/B disk layout.

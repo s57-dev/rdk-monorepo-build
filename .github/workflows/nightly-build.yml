@@ -37,6 +37,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Determine build version
+        id: version
+        run: |
+          base_tag="nightly-$(date -u +'%Y%m%d')"
+          tag="${base_tag}"
+          if git ls-remote --exit-code --tags origin "refs/tags/${base_tag}" >/dev/null 2>&1; then
+            tag="${base_tag}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
       - name: Build kas container image
         run: docker build -t rdk-kas-builder:latest .
 
@@ -61,7 +71,9 @@ jobs:
       - name: Build SWUpdate RPi image
         env:
           KAS_CONTAINER_IMAGE: rdk-kas-builder:latest
-        run: kas-container build kas/monolithic-raspberrypi4.yml:kas/extras/swupdate.yml
+        run: |
+          kas-container --runtime-args "--env BUILD_VERSION=${{ steps.version.outputs.tag }}" \
+            build kas/monolithic-raspberrypi4.yml:kas/extras/swupdate.yml
 
       - name: Stage SWUpdate RPi image artifact
         run: |
@@ -73,7 +85,9 @@ jobs:
       - name: Build SWUpdate package
         env:
           KAS_CONTAINER_IMAGE: rdk-kas-builder:latest
-        run: kas-container build kas/monolithic-raspberrypi4.yml:kas/extras/swupdate.yml --target rdk-ab-update-image
+        run: |
+          kas-container --runtime-args "--env BUILD_VERSION=${{ steps.version.outputs.tag }}" \
+            build kas/monolithic-raspberrypi4.yml:kas/extras/swupdate.yml --target rdk-ab-update-image
 
       - name: Stage SWUpdate package artifact
         run: |
@@ -102,10 +116,5 @@ jobs:
 
       - name: Tag commit with nightly build date
         run: |
-          base_tag="nightly-$(date -u +'%Y%m%d')"
-          tag="${base_tag}"
-          if git ls-remote --exit-code --tags origin "refs/tags/${base_tag}" >/dev/null 2>&1; then
-            tag="${base_tag}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          fi
-          git tag "$tag"
-          git push origin "$tag"
+          git tag "${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
