@@ -40,6 +40,12 @@ KAS_CONTAINER_IMAGE=rdk-kas-builder:latest \
     kas-container build kas/monolithic-raspberrypi4.yml
 ```
 
+# Updating to latest release
+
+```
+update_ota.sh
+```
+
 ## SWUpdate + A/B overlay
 
 Build with the optional SWUpdate A/B layer supprot and recovery. This will be a much larger image, since
@@ -75,6 +81,18 @@ swupdate -e stable,copy2 -H raspberrypi4-64-rdke:1.0 -i /path/to/rdk-ab-update-i
 
 # when currently booted from mmcblk0p3
 swupdate -e stable,copy1 -H raspberrypi4-64-rdke:1.0 -i /path/to/rdk-ab-update-image-*.swu -v
+```
+
+Using `update_ota.sh` for system update
+
+```
+Usage: update_ota.sh [OPTIONS]
+
+Options:
+  (none)        Auto-check latest GitHub release (requires GITHUB_REPO in /etc/rdk-ota.conf)
+  -u <url>      Download .swu or .zip (containing .swu) from the given URL
+  -f <file>     Install .swu or .zip (containing .swu) from a local file path
+  -h            Show this help
 ```
 
 How it works
